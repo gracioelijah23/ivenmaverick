@@ -28,7 +28,8 @@ body{
 body.reading{overflow-y:auto}
 button{font:inherit;color:inherit}
 :focus-visible{outline:3px dashed var(--honey);outline-offset:3px;border-radius:8px}
-#stage{position:fixed;inset:0;z-index:1;touch-action:pan-y}
+#stage{position:fixed;inset:0;z-index:1;touch-action:pan-y;
+  transform:translateZ(0);will-change:transform;backface-visibility:hidden}
 
 /* --- overlay layers --- */
 .layer{position:fixed;inset:0;z-index:5;display:grid;place-items:center;pointer-events:none;
@@ -64,29 +65,29 @@ button{font:inherit;color:inherit}
 .panel{padding:70px 16px 10px}
 .panel#panel-home{padding-top:0}
 .reveal{
-  opacity:0;transform:translateX(78px);will-change:opacity,transform;
-  transition:opacity .55s ease,transform .55s ease;
+  opacity:0;transform:translateX(36px);will-change:opacity,transform;
+  transition:opacity .5s cubic-bezier(.16,.8,.24,1),transform .5s cubic-bezier(.16,.8,.24,1);
 }
 .reveal.show{
   opacity:1;transform:none;
-  transition:opacity 1.5s cubic-bezier(.16,.8,.24,1) 1.2s,transform 1.5s cubic-bezier(.16,.8,.24,1) 1.2s;
+  transition:opacity .7s cubic-bezier(.16,.8,.24,1) .08s,transform .7s cubic-bezier(.16,.8,.24,1) .08s;
 }
 
 /* staggered entrance for the little groups inside each revealed panel */
 .tcard,.row,.place{
-  opacity:0;transform:translateX(48px);
+  opacity:0;transform:translateX(32px);
   transition:opacity .4s ease,transform .4s ease;
 }
 .show .tcard,.show .row,.show .place{
   opacity:1;transform:none;
-  transition:opacity 1.2s cubic-bezier(.16,.8,.24,1),transform 1.2s cubic-bezier(.16,.8,.24,1);
+  transition:opacity .8s cubic-bezier(.16,.8,.24,1),transform .8s cubic-bezier(.16,.8,.24,1);
 }
-.show .tcard:nth-child(1){transition-delay:1.3s}
-.show .tcard:nth-child(2){transition-delay:1.5s}
-.show .row:nth-child(1){transition-delay:1.3s}
-.show .row:nth-child(2){transition-delay:1.5s}
-.show .place:nth-child(1){transition-delay:1.3s}
-.show .place:nth-child(2){transition-delay:1.55s}
+.show .tcard:nth-child(1){transition-delay:.15s}
+.show .tcard:nth-child(2){transition-delay:.27s}
+.show .row:nth-child(1){transition-delay:.15s}
+.show .row:nth-child(2){transition-delay:.27s}
+.show .place:nth-child(1){transition-delay:.15s}
+.show .place:nth-child(2){transition-delay:.29s}
 
 /* --- home hero (full-bleed, no card) --- */
 .hero{
@@ -170,6 +171,7 @@ button{font:inherit;color:inherit}
 /* --- lightbox: full-screen blurred gallery --- */
 .lightbox{
   position:fixed;inset:0;z-index:60;display:none;
+  height:100vh;height:100dvh;overscroll-behavior:contain;
   background:rgba(20,11,4,.5);
   -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
 }
@@ -942,13 +944,16 @@ addEventListener('mousemove',e=>{
   const teaser=$('stackTeaser'), box=$('lightbox'), closeBtn=$('lightboxClose'), body=$('lightboxBody');
   if(!teaser||!box) return;
 
-  function openBox(){
+function openBox(){
     box.classList.add('open');
     document.body.style.overflow='hidden';
+    document.getElementById('ui-invite').style.overflow='hidden';
+    window.scrollTo(0,0);
   }
   function closeBox(){
     box.classList.remove('open');
     document.body.style.overflow='';
+    document.getElementById('ui-invite').style.overflow='';
   }
   teaser.addEventListener('click',openBox);
   teaser.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openBox(); } });
