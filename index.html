@@ -19,7 +19,7 @@
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--muslin:#F6EBDC;--ink:#3B2617}}
 :root[data-theme="dark"]{--muslin:#F6EBDC;--ink:#3B2617}
 *,*::before,*::after{box-sizing:border-box}
-html,body{height:100%;margin:0}
+html,body{height:100%;margin:0;overflow-x:hidden}
 body{
   font-family:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);
   background:radial-gradient(120% 95% at 50% 8%,#7A5234 0%,#4A2F1C 42%,#241306 100%);
@@ -28,7 +28,7 @@ body{
 body.reading{overflow:hidden}
 button{font:inherit;color:inherit}
 :focus-visible{outline:3px dashed var(--honey);outline-offset:3px;border-radius:8px}
-#stage{position:fixed;inset:0;z-index:1;touch-action:pan-y;
+#stage{position:fixed;inset:0;z-index:1;touch-action:none;
   transform:translateZ(0);will-change:transform;backface-visibility:hidden}
 
 /* --- overlay layers --- */
@@ -62,7 +62,7 @@ button{font:inherit;color:inherit}
 #flash.on{opacity:1}
 
 /* stage 3 invitation */
-#ui-invite{display:block;overflow-y:auto;-webkit-overflow-scrolling:touch;pointer-events:auto;overscroll-behavior:contain;
+#ui-invite{display:block;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;pointer-events:auto;overscroll-behavior:contain;
   padding:0 0 calc(40px + env(safe-area-inset-bottom,0px));
   height:100%;width:100%;
   scrollbar-width:thin;scrollbar-color:rgba(217,164,65,.55) transparent}
