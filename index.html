@@ -47,7 +47,7 @@ button{font:inherit;color:inherit}
 .tagline b{display:block;font-size:clamp(23px,6vw,34px);font-weight:700}
 .tagline span{display:block;font-family:"Nunito";font-size:14px;opacity:.7;margin-top:6px}
 .tap{color:var(--honey-soft);font-size:14px;font-weight:700;text-align:center;
-  animation:fadeInUp 2s cubic-bezier(.16,.8,.24,1) .4s both, nudge 2s ease-in-out 2.4s infinite;
+  animation:fadeInUp 2s cubic-bezier(.16,.8,.24,1) .4s both;
   will-change:transform;backface-visibility:hidden}
 @keyframes nudge{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,var(--nudge-y),0)}}
 
@@ -141,7 +141,7 @@ html,body{overscroll-behavior:none}
   color:var(--muslin);font-size:12px;letter-spacing:.08em;
   opacity:0;
 }
-.hero.play .scroll-cue{animation:fadeInUp .9s cubic-bezier(.16,.8,.24,1) .9s both, cueBounce 2s ease-in-out 1.8s infinite}
+.hero.play .scroll-cue{animation:fadeInUp .9s cubic-bezier(.16,.8,.24,1) .9s both}
 .scroll-cue .arrow{font-size:18px;line-height:1}
 @keyframes cueBounce{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,var(--cue-y),0)}}
 .rsvp-anchor{width:min(92vw,540px);margin:0 auto}
