@@ -93,12 +93,17 @@ html,body{overscroll-behavior:none}
   opacity:1;transform:none;
   transition:opacity 2s cubic-bezier(.16,.8,.24,1),transform 2s cubic-bezier(.16,.8,.24,1);
 }
-.show .tcard:nth-child(1){transition-delay:.15s}
-.show .tcard:nth-child(2){transition-delay:.27s}
-.show .row:nth-child(1){transition-delay:.15s}
-.show .row:nth-child(2){transition-delay:.27s}
+.show .tcard:nth-child(1){transition-delay:.42s}
+.show .tcard:nth-child(2){transition-delay:.54s}
+.show .row:nth-child(1){transition-delay:.62s}
+.show .row:nth-child(2){transition-delay:.74s}
 .show .place:nth-child(1){transition-delay:.15s}
 .show .place:nth-child(2){transition-delay:.29s}
+
+/* gallery gets its own entrance, ahead of and separate from the
+   Church/Venue tcards, instead of popping in together with them */
+.gallery-wrap{opacity:0;transform:translateX(32px);transition:opacity .4s ease,transform .4s ease}
+.show .gallery-wrap{opacity:1;transform:none;transition:opacity 2s cubic-bezier(.16,.8,.24,1) .1s,transform 2s cubic-bezier(.16,.8,.24,1) .1s}
 
 /* --- home hero (full-bleed, no card) --- */
 .hero{
@@ -787,12 +792,19 @@ const clearAll=()=>{timers.forEach(clearTimeout);timers=[];tweens.length=0};
 
 /* ---------- pointer drag / parallax ---------- */
 let tgX=0,tgY=0,curX=0,curY=0,dragging=false,lx=0,ly=0,spin=0;
+let dragStartX=0,dragStartY=0,dragMoved=false;
 const cv=$('stage');
-cv.addEventListener('pointerdown',e=>{dragging=true;lx=e.clientX;ly=e.clientY;cv.setPointerCapture(e.pointerId)});
+cv.addEventListener('pointerdown',e=>{dragging=true;dragMoved=false;lx=e.clientX;ly=e.clientY;dragStartX=e.clientX;dragStartY=e.clientY;cv.setPointerCapture(e.pointerId)});
 cv.addEventListener('pointerup',()=>dragging=false);
 cv.addEventListener('pointercancel',()=>dragging=false);
 cv.addEventListener('pointermove',e=>{
-  if(dragging){ spin+=(e.clientX-lx)*.006; tgY+=(e.clientY-ly)*.004; lx=e.clientX; ly=e.clientY; }
+  if(dragging){
+    if(!dragMoved){
+      if(Math.abs(e.clientX-dragStartX)<6&&Math.abs(e.clientY-dragStartY)<6) return;
+      dragMoved=true; lx=e.clientX; ly=e.clientY;
+    }
+    spin+=(e.clientX-lx)*.006; tgY+=(e.clientY-ly)*.004; lx=e.clientX; ly=e.clientY;
+  }
   else { tgX=(e.clientX/innerWidth-.5)*.5; tgY=(e.clientY/innerHeight-.5)*.3; }
   tgY=Math.max(-.5,Math.min(.5,tgY));
 });
@@ -921,7 +933,7 @@ skip.addEventListener('click',()=>{ flash.classList.add('on'); setTimeout(()=>go
 
 
 /* ================= loop ================= */
-let last=performance.now();
+let last=performance.now(), frameSkip=0;
 (function loop(now){
   requestAnimationFrame(loop);
   const dt=Math.min(.05,(now-last)/1000); last=now;
@@ -953,7 +965,8 @@ let last=performance.now();
       if(m.position.y>6) m.position.y=-6;
     });
   }
-  renderer.render(scene,camera);
+  if(stage===3){ frameSkip=(frameSkip+1)%2; if(frameSkip===0) renderer.render(scene,camera); }
+  else renderer.render(scene,camera);
 })(last);
 
 let resizeTimer;
