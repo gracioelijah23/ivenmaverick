@@ -324,6 +324,7 @@ input:focus,textarea:focus{border-color:var(--fur);outline:none}
 .thanks.on{display:block;animation:rise .55s ease}
 @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 .thanks p{color:var(--muslin-2);opacity:1;font-size:15px;line-height:1.6;max-width:34ch;margin:8px auto 0;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+#guestBlock.two{grid-template-columns:1fr}
 .hidden{display:none}
 .footer{text-align:center;color:var(--muslin);opacity:.5;font-size:13px;margin:20px auto 6px}
 .replay{background:none;border:0;color:inherit;text-decoration:underline;cursor:pointer;font-size:13px}
@@ -364,6 +365,13 @@ input:focus,textarea:focus{border-color:var(--fur);outline:none}
 .rsvp-anchor .thanks p{font-size:18px;color:#fff}
 .footer{opacity:1;color:#fff;font-size:15px;text-shadow:0 1px 4px rgba(0,0,0,.7)}
 .replay{font-size:15px}
+
+/* --- background music toggle --- */
+.music-btn{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:50;width:54px;height:54px;border-radius:50%;
+  border:2px solid #F0C971;background:rgba(32,18,9,.78);color:#fff;font-size:24px;line-height:1;cursor:pointer;
+  display:grid;place-items:center;box-shadow:0 4px 12px rgba(0,0,0,.4);-webkit-tap-highlight-color:transparent}
+.music-btn[hidden]{display:none}
+.music-btn.off{background:rgba(32,18,9,.78);border-color:rgba(255,255,255,.6);opacity:.9}
 </style>
 </head>
 <body>
@@ -402,7 +410,6 @@ input:focus,textarea:focus{border-color:var(--fur);outline:none}
     <div class="rsvp-anchor reveal">
       <main class="card" id="card">
         <h2>Will you come?</h2>
-        <p class="note">Kindly reply by 27 September 2026</p>
         <div id="formWrap">
           <div class="field">
             <label for="name">Your name</label>
@@ -416,8 +423,7 @@ input:focus,textarea:focus{border-color:var(--fur);outline:none}
           </div>
           <div class="two" id="guestBlock">
             <div class="field"><label for="guests">Guests, including you</label><input type="number" id="guests" min="1" max="8" value="1"></div>
-            <div class="field"><label for="food">Anything you don't eat?</label><input type="text" id="food" placeholder="Nuts, dairy, none…"></div>
-          </div>
+            </div>
           <div class="field"><label for="msg">A note for Iven's parents</label><textarea id="msg" placeholder="A wish for the little one…"></textarea></div>
           <button class="send" id="send">Send my reply</button>
         </div>
@@ -545,6 +551,7 @@ input:focus,textarea:focus{border-color:var(--fur);outline:none}
     </div>
 
 
+<button class="music-btn" id="musicBtn" aria-label="Turn music off" aria-pressed="true" hidden>🎵</button>
 <p class="drag-hint" id="dragHint" hidden>drag to look around</p>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -552,6 +559,62 @@ input:focus,textarea:focus{border-color:var(--fur);outline:none}
 (function(){
 "use strict";
 const $=id=>document.getElementById(id);
+/* ===== Soft lullaby music box + gentle beat (made with Web Audio, no files needed) ===== */
+const Music=(()=>{
+  const M=[[76,79,76,79,81,79,76,0],[76,81,76,81,84,81,76,0],[77,81,77,81,84,81,77,0],[74,79,83,79,86,83,79,0],
+           [76,79,76,79,81,79,76,72],[72,76,81,76,84,81,79,76],[77,81,84,81,77,81,79,77],[74,77,79,83,84,0,0,0]];
+  const B=[48,45,41,43,48,45,41,43], SD=.32;
+  let ctx,master,noise,timer=null,nextT=0,idx=0,wanted=true,active=false;
+  const hz=m=>440*Math.pow(2,(m-69)/12);
+  function ensure(){
+    if(ctx) return ctx;
+    const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return null;
+    ctx=new AC();
+    const comp=ctx.createDynamicsCompressor(); master=ctx.createGain(); master.gain.value=0;
+    master.connect(comp); comp.connect(ctx.destination);
+    noise=ctx.createBuffer(1,ctx.sampleRate*.08,ctx.sampleRate);
+    const d=noise.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+    return ctx;
+  }
+  function env(g,t,peak,dur){g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(peak,t+.008);g.gain.exponentialRampToValueAtTime(.0001,t+dur);}
+  function bell(m,t){
+    const f=hz(m),g=ctx.createGain(); g.connect(master); env(g,t,.16,1.3);
+    [[1,1],[2,.28],[3,.07]].forEach(([mul,v])=>{const o=ctx.createOscillator(),og=ctx.createGain();o.type='sine';o.frequency.value=f*mul;og.gain.value=v;o.connect(og);og.connect(g);o.start(t);o.stop(t+1.4);});
+  }
+  function bass(m,t){const o=ctx.createOscillator(),g=ctx.createGain();o.type='triangle';o.frequency.value=hz(m);o.connect(g);g.connect(master);env(g,t,.2,.55);o.start(t);o.stop(t+.6);}
+  function kick(t){const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.setValueAtTime(130,t);o.frequency.exponentialRampToValueAtTime(45,t+.12);o.connect(g);g.connect(master);env(g,t,.32,.18);o.start(t);o.stop(t+.2);}
+  function hat(t,v){const s=ctx.createBufferSource(),hp=ctx.createBiquadFilter(),g=ctx.createGain();s.buffer=noise;hp.type='highpass';hp.frequency.value=7000;s.connect(hp);hp.connect(g);g.connect(master);env(g,t,v,.05);s.start(t);}
+  function tick(){
+    while(nextT<ctx.currentTime+.25){
+      const bar=Math.floor(idx/8)%8, st=idx%8, n=M[bar][st];
+      if(n) bell(n,nextT);
+      if(st===0) bass(B[bar],nextT);
+      if(st===4) bass(bar===7?48:B[bar]+7,nextT);
+      if(st===0||st===4) kick(nextT);
+      hat(nextT,st%2? .025:.06);
+      nextT+=SD; idx++;
+    }
+  }
+  function start(){
+    active=true; if(!wanted) return; const c=ensure(); if(!c) return;
+    const go=()=>{ if(timer) return; nextT=c.currentTime+.1; idx=0;
+      master.gain.cancelScheduledValues(c.currentTime); master.gain.setValueAtTime(master.gain.value,c.currentTime); master.gain.linearRampToValueAtTime(.6,c.currentTime+2.5);
+      timer=setInterval(tick,50); };
+    if(c.state==='suspended') c.resume().then(go).catch(()=>{}); else go();
+  }
+  function halt(){ if(timer){clearInterval(timer);timer=null;} if(ctx&&master){master.gain.cancelScheduledValues(ctx.currentTime);master.gain.setValueAtTime(0,ctx.currentTime);} }
+  function stop(){active=false;halt();}
+  function toggle(){wanted=!wanted; if(wanted&&active) start(); else halt(); return wanted;}
+  document.addEventListener('visibilitychange',()=>{ if(!ctx) return; if(document.hidden){halt();ctx.suspend&&ctx.suspend();} else if(active&&wanted) start(); });
+  ['pointerdown','touchend','keydown'].forEach(e=>document.addEventListener(e,()=>{const c=ensure(); if(c&&c.state==='suspended') c.resume().catch(()=>{});},{passive:true}));
+  return {start,stop,toggle};
+})();
+const musicBtn=$('musicBtn');
+musicBtn.addEventListener('click',()=>{
+  const on=Music.toggle();
+  musicBtn.textContent=on?'🎵':'🔇'; musicBtn.classList.toggle('off',!on);
+  musicBtn.setAttribute('aria-pressed',on); musicBtn.setAttribute('aria-label',on?'Turn music off':'Turn music on');
+});
 const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const uiEnv=$('ui-env'),uiBear=$('ui-bear'),uiInv=$('ui-invite'),cap=$('caption'),flash=$('flash'),
       skip=$('skip'),dragHint=$('dragHint');
@@ -969,6 +1032,7 @@ function goInvite(instant){
   }
   uiInv.classList.add('on');
   uiInv.scrollTop=0;
+  musicBtn.hidden=false; Music.start();
   setTimeout(()=>flash.classList.remove('on'),instant?0:200);
 }
 
@@ -1122,6 +1186,16 @@ $('send').addEventListener('click',()=>{
   const el=$('name'),name=el.value.trim();
   if(!name){el.focus();el.placeholder='We need a name to save your seat';el.style.borderColor='#C0564C';return;}
   const g=$('guests').value||1, first=name.split(' ')[0];
+  /* send the reply to Google Forms */
+  try{
+    const data=new URLSearchParams();
+    data.append('entry.1586620360',name);
+    data.append('entry.1333518273',yes.checked?"I'll be there":"I'll be there in spirit");
+    data.append('entry.1053515006',yes.checked?String(g):'0');
+    data.append('entry.587841469',$('msg').value.trim());
+    fetch('https://docs.google.com/forms/d/e/1FAIpQLSd-1DPBGDwp1rJC08R0aHw_FnNsexlrKRout2mS2V0V4-JQWQ/formResponse',
+      {method:'POST',mode:'no-cors',body:data}).catch(()=>{});
+  }catch(e){}
   $('thanksTitle').textContent = yes.checked ? 'Saved you a seat, '+first : 'We\u2019ll miss you, '+first;
   $('thanksBody').textContent = yes.checked
     ? 'A seat is saved for you at Iven\u2019s christening celebration on October 11. Don\u2019t forget your teddy.'
@@ -1134,6 +1208,7 @@ $('replay').addEventListener('click',()=>{
   clearAll(); stage=1; envOpened=false; spin=0; bearTurn=0;
   document.body.classList.remove('reading');
   uiInv.classList.remove('on'); flash.classList.remove('on');
+  Music.stop(); musicBtn.hidden=true;
   motes.visible=false; bearRoot.visible=false; bearRoot.scale.setScalar(.01);
   bearRoot.position.set(0,0,0);
   doors.forEach(d=>d.hinge.rotation.y=0);
