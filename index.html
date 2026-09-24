@@ -116,7 +116,8 @@ html,body{overscroll-behavior:none}
   gap:16px;padding:20px 20px 60px;text-align:center;
   will-change:opacity,transform;transition:opacity .18s ease-out,transform .18s ease-out;
 }
-.hero-kicker{font-family:"Nunito";font-size:13px;letter-spacing:.16em;color:var(--sky-soft);opacity:.9;
+.hero-kicker{font-family:"Nunito";font-size:15px;font-weight:800;letter-spacing:.14em;color:#fff;opacity:.9;
+  text-shadow:0 0 6px rgba(40,22,10,.95),0 1px 3px rgba(40,22,10,.95),0 2px 12px rgba(40,22,10,.85);
   opacity:0}
 .hero.play .hero-kicker{animation:fadeInUp 4s cubic-bezier(.16,.8,.24,1) 0s both}
 .ribbon{
@@ -132,9 +133,10 @@ html,body{overscroll-behavior:none}
 .ribbon::after{right:0;border-width:9px 0 0 13px;border-color:#3D7A99 transparent transparent transparent}
 .ribbon span{position:relative;z-index:1;font-family:"Baloo 2";font-weight:800;
   font-size:clamp(38px,10vw,64px);color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.25);white-space:nowrap}
-.hero-sub{font-family:"Baloo 2";font-size:clamp(16px,4vw,20px);color:var(--muslin);opacity:0}
+.hero-sub{font-family:"Baloo 2";font-size:clamp(18px,4.6vw,22px);font-weight:700;color:#fff;opacity:0;
+  text-shadow:0 0 6px rgba(40,22,10,.95),0 1px 3px rgba(40,22,10,.95),0 2px 12px rgba(40,22,10,.85)}
 .hero.play .hero-sub{animation:fadeInUp 4s cubic-bezier(.16,.8,.24,1) .6s both}
-.hero-sub b{color:#9FD8FF;text-shadow:0 2px 6px rgba(0,0,0,.5)}
+.hero-sub b{color:#B8E2FF;font-weight:800}
 .scroll-cue{
   position:absolute;left:0;right:0;margin:0 auto;width:max-content;
   bottom:calc(22px + env(safe-area-inset-bottom,0px));
