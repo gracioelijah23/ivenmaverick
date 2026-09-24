@@ -243,10 +243,10 @@ html,body{overscroll-behavior:none}
 }
 
 /* --- location tab --- */
-.place{margin-bottom:22px}
+.place{margin-bottom:22px;text-align:center}
 .place:last-child{margin-bottom:0}
-.place h3{font-family:"Baloo 2";font-size:19px;color:var(--muslin);margin:0 0 3px;display:flex;align-items:center;gap:8px;text-shadow:0 1px 3px rgba(0,0,0,.5)}
-.place p.addr{font-size:14px;color:var(--muslin-2);opacity:1;margin:0 0 12px;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.place h3{font-family:"Baloo 2";font-size:19px;color:var(--muslin);margin:0 0 3px;display:flex;align-items:center;justify-content:center;gap:8px;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.place p.addr{font-size:14px;color:var(--muslin-2);opacity:1;margin:0 auto 12px;max-width:34ch;line-height:1.5;text-shadow:0 1px 3px rgba(0,0,0,.5)}
 .mapbox{
   display:block;height:160px;border-radius:16px;border:2px solid rgba(79,148,190,.45);
   background:linear-gradient(160deg,rgba(79,148,190,.22),rgba(79,148,190,.06));
@@ -259,12 +259,12 @@ html,body{overscroll-behavior:none}
   background-size:16px 16px;
 }
 .mapbox .mapinner{
-  position:relative;z-index:1;height:100%;display:flex;flex-direction:column;
+  position:relative;z-index:1;width:100%;height:100%;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:5px;text-align:center;padding:10px;
 }
 .mapbox .mi{font-size:26px}
 .mapbox b{font-family:"Baloo 2";font-size:15px}
-.mapbox span{font-size:12px;opacity:.9;max-width:28ch}
+.mapbox .mapinner>span:not(.mi):not(.go){font-size:12px;opacity:.9;max-width:28ch}
 .mapbox .go{
   margin-top:4px;font-family:"Baloo 2";font-size:12px;font-weight:700;letter-spacing:.03em;
   color:var(--cocoa);background:var(--honey-soft);padding:6px 14px;border-radius:999px;
@@ -981,10 +981,13 @@ function startBear(){
   cap.textContent='Hello! I have something for you…';
   tw(1.1,.1,outBack,p=>bearRoot.scale.setScalar(.01+p*.99));
   // wave
-  tw(1.3,1.1,inOutCubic,p=>{
-    const a=Math.sin(p*Math.PI*2)*1.0;
-    arms[1].pivot.rotation.z=-.36-a*.95;
-    arms[1].pivot.rotation.x=-Math.max(0,a)*.35;
+  tw(1.6,.9,x=>x,p=>{
+    const ss=v=>{v=Math.max(0,Math.min(1,v));return v*v*(3-2*v);};
+    const e=ss(Math.min(p/.22,(1-p)/.22,1));            // raise -> hold -> lower
+    const base=.36;                                      // rest pose, same as the other arm
+    const raised=2.3+Math.sin(p*Math.PI*2*2.5)*.32;      // arm up beside the head, waving
+    arms[1].pivot.rotation.z=base+(raised-base)*e;
+    arms[1].pivot.rotation.x=-.22*e;
   });
   at(2500,()=>{
     setCaption('Let me turn around…');
@@ -1101,7 +1104,7 @@ let last=performance.now(), frameSkip=0;
     bear.position.y=-.3+Math.sin(t*1.3)*.07;
     head.rotation.z=Math.sin(t*.9)*.05;
     if(stage===3){
-      arms[1].pivot.rotation.z=-.36+Math.sin(t*1.7)*.25;
+      arms[1].pivot.rotation.z=.36+Math.sin(t*1.7)*.12;
       arms[0].pivot.rotation.z=-.36+Math.sin(t*1.1)*.08;
     }
   }
